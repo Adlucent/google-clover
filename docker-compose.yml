@@ -1,0 +1,88 @@
+version: "2"
+
+services:
+  django:
+    container_name: admin_django_1
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: admin_django_1
+    working_dir: /usr/app/site
+    command: /bin/bash
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - 8002:8002
+      - 7001:7001
+      - 3001:3001
+    volumes:
+      - .:/usr/app
+    links:
+      - postgres:postgres
+      - redis:redis
+    environment:
+      SECRET_KEY: 'test-key' 
+      REDIS_HOST: 'redis://redis:6379'
+      DJANGO_SETTINGS_MODULE: config.settings
+      PYTHONPATH: /usr/app/site:/usr/app/site/vendor
+      PIPENV_VENV_IN_PROJECT: 1
+      DEBUG: 1
+      DEBUG: 'True'      
+      DB_HOST: 'postgres'
+      DB_PORT: '5432' # PostgreSQL port
+      DB_NAME: 'djangodb'
+      DB_USER: 'djangodb' # either 'postgres' (default) or one you created on the PostgreSQL instance page
+      DB_PASSWORD: 'djangodb'     
+      STATIC_URL: '/static/'
+      GOOGLE_APPLICATION_CREDENTIALS: '../cloud-key.json'
+
+
+  celery:
+    container_name: admin_celery_1
+    image: admin_django_1
+    working_dir: /usr/app/site
+    command: /bin/bash
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/usr/app
+    depends_on:
+      - django
+    links:
+      - postgres:postgres
+      - redis:redis
+    logging:
+      driver: none
+    ports:
+      - 6900:6900
+    environment:
+      REDIS_HOST: 'redis://redis:6379'
+      DJANGO_SETTINGS_MODULE: config.settings
+      PYTHONPATH: /usr/app/site:/usr/app/site/vendor
+      PIPENV_VENV_IN_PROJECT: 1
+      DEBUG: 1
+
+  postgres:
+    image: postgres:latest
+    container_name: admin_postgres_1
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - /usr/lib/postgresql
+      - .:/usr/app/django
+    environment:
+     POSTGRES_USER: djangodb
+     POSTGRES_PASSWORD: djangodb
+    logging:
+      driver: none
+
+  redis:
+    image: redis:latest
+    container_name: admin_redis_1
+    restart: unless-stopped
+    hostname: redis
+    ports:
+    - '6379:6379'

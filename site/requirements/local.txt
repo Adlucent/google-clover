@@ -1,0 +1,15 @@
+-r base.txt
+# -------------------------------------
+# LOCAL REQUIREMENTS
+# -------------------------------------
+
+django-debug-toolbar
+pylint
+pylint-django
+pytest-cov
+flake8
+ipdb
+ptvsd
+pytest-env==0.6.2
+django-sslserver
+google-cloud-logging

@@ -1,0 +1,10 @@
+# -------------------------------------
+# PRODUCTION REQUIREMENTS
+# -------------------------------------
+
+gunicorn
+cffi
+django-postgrespool
+gevent
+newrelic
+

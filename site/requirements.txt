@@ -1,0 +1,40 @@
+# -------------------------------------
+# BASE REQUIREMENTS
+# -------------------------------------
+
+# Django Reqs
+# =====================================
+
+Django~=3.0
+psycopg2-binary~=2.7
+mimeparse
+pytz
+Pillow
+
+# Django Apps
+# ======================================
+
+django-robots
+django-environ
+django-extensions
+django-model-utils
+djangorestframework
+djangorestframework_simplejwt==4.4
+djangorestframework-api-key==2.1
+PyJWT==1.7.1
+django-ipware
+django-storages[google]
+django-grappelli
+django_countries
+google-cloud-logging
+google-cloud-aiplatform
+# -------------------------------------
+# PRODUCTION REQUIREMENTS
+# -------------------------------------
+
+gunicorn
+cffi
+django-postgrespool
+gevent
+newrelic
+

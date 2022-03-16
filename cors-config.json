@@ -1,0 +1,14 @@
+[
+    {
+      "origin": ["http://localhost:8000", "localhost:8000", "api.example.com", "https://api.example.com"],
+      "method": ["GET", "POST"],
+      "responseHeader": ["Access-Control-Allow-Origin"],
+      "maxAgeSeconds": 3600
+    },
+    {
+      "origin": ["*"],
+      "method": ["GET"],
+      "responseHeader": ["Access-Control-Allow-Origin"],
+      "maxAgeSeconds": 3600
+    }
+]

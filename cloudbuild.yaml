@@ -1,0 +1,75 @@
+steps:
+- name: 'python:3.7' #BUILD STEP 0: Setup Django so we can run collectstatic
+  entrypoint: python3                                                           
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: ['-m', 'pip', 'install', '-t', '.', '-r', '/workspace/site/requirements.txt']
+  dir: '/persistent_volume'
+- name: 'python:3.7' #BUILD STEP 1: Run collectstatic to prep serving static files on GC Storage
+  entrypoint: python3
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: ['/workspace/site/manage.py', 'collectstatic', '--noinput']
+  env:
+  - 'DEBUG=False'
+  - 'PYTHONPATH=/persistent_volume'
+  - 'SECRET_KEY=12345' #this django instance is ephemeral and goes away. Only used to collect static
+  - 'STATIC_URL=/static'
+  - 'STATIC_ROOT=/persistent_volume/static'
+  dir: '/persistent_volume'
+- name: gcr.io/cloud-builders/gsutil #BUILD STEP 2: Sync static files to GC Storage
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: ['rsync', '-r', '/persistent_volume/static', 'gs://clv-app-gcp_static/static/']
+  dir: '/persistent_volume'
+- name: gcr.io/cloud-builders/gcloud #BUILD STEP 3: Pull in DB Password stored in Secrets
+  entrypoint: 'bash'
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=db-password > /persistent_volume/decrypted-db-password.txt' ]
+  dir: '/persistent_volume'
+- name: gcr.io/cloud-builders/gcloud #BUILD STEP 4: Pull in DJANGO Secret Key stored in Secrets
+  entrypoint: 'bash'
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=django-secret-key > /persistent_volume/decrypted-django-key.txt' ]
+  dir: '/persistent_volume'
+- name: 'python:3.7' #BUILD STEP 5: Update app.yaml to use the DB Password from Secrets
+  entrypoint: 'bash'                                                           
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: 
+  - '-c'
+  - |
+    python /workspace/site/replace-text.py /workspace/site/app.yaml "DB_PASSWORD: ''" "DB_PASSWORD: '$(</persistent_volume/decrypted-db-password.txt)'" && cp /workspace/site/app.yaml /persistent_volume/app.yaml
+  dir: '/persistent_volume'
+- name: 'python:3.7' #BUILD STEP 6: Update app.yaml to use the Django Secret Key from Secrets
+  entrypoint: 'bash'                                                           
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: 
+  - '-c'
+  - |
+    python /workspace/site/replace-text.py /persistent_volume/app.yaml "SECRET_KEY: ''" "SECRET_KEY: '$(</persistent_volume/decrypted-django-key.txt)'"
+  dir: '/persistent_volume'
+- name: gcr.io/cloud-builders/gcloud #BUILD STEP 7: Pull in Storage Key stored in Secrets
+  entrypoint: 'bash'
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: [ '-c', 'gcloud secrets versions access latest --secret=admin-upload-key > /persistent_volume/cloud-key-storage.json' ]
+  dir: '/persistent_volume'
+- name: 'gcr.io/cloud-builders/gcloud' #BUILD STEP 8: Move the app.yaml from persistant storage to the right workspace location, and then gcloud run app deploy to build the flex containers based on app.yaml
+  entrypoint: 'bash'
+  volumes:
+  - name: 'vol1'
+    path: '/persistent_volume'
+  args: [ '-c', 'cp /persistent_volume/app.yaml /workspace/site/app.yaml && cp /persistent_volume/cloud-key-storage.json /workspace/site/cloud-key-storage.json && gcloud app deploy site/app.yaml --stop-previous-version']  
+timeout: "6400s"
