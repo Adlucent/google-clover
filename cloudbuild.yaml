@@ -72,4 +72,17 @@ steps:
   - name: 'vol1'
     path: '/persistent_volume'
   args: [ '-c', 'cp /persistent_volume/app.yaml /workspace/site/app.yaml && cp /persistent_volume/cloud-key-storage.json /workspace/site/cloud-key-storage.json && gcloud app deploy site/app.yaml --stop-previous-version']  
+# - name: 'python:3.7' #BUILD STEP 9: Run migrations
+#   entrypoint: python3
+#   volumes:
+#   - name: 'vol1'
+#     path: '/persistent_volume'
+#   args: ['/workspace/site/manage.py', 'migrate']
+#   env:
+#   - 'DEBUG=False'
+#   - 'PYTHONPATH=/persistent_volume'
+#   - 'SECRET_KEY=$(</persistent_volume/decrypted-django-key.txt)'
+#   - 'STATIC_URL=/static'
+#   - 'STATIC_ROOT=/persistent_volume/static'
+#   dir: '/persistent_volume'  
 timeout: "6400s"

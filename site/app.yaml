@@ -16,7 +16,7 @@ automatic_scaling:
 # accessible through os.environ['VARIABLE_NAME']
 env_variables:
 # the secret key used for the Django app (from PROJECT-DIRECTORY/settings.py)
-  SECRET_KEY: '' # This is a secret stored in GCP Secrets Manager and loaded during the build
+  SECRET_KEY: 'TEMP_SECRET_KEY' # This is a secret stored in GCP Secrets Manager and loaded during the build
   DEBUG: 'False' # always False for deployment
   
 # everything after /cloudsql/ can be found by entering >> gcloud sql instances describe DATABASE-NAME << in your Terminal
@@ -27,7 +27,7 @@ env_variables:
   DB_PORT: '5432' # PostgreSQL port
   DB_NAME: 'postgres'
   DB_USER: 'postgres' # either 'postgres' (default) or one you created on the PostgreSQL instance page
-  DB_PASSWORD: '' # This is a secret stored in GCP Secrets Manager and loaded during the build
+  DB_PASSWORD: 'TEMP_DB_PASSWORD' # This is a secret stored in GCP Secrets Manager and loaded during the build
 
   STATIC_URL: 'https://storage.googleapis.com/clover-gcp_static/static/' ##PROJECT SPECIFIC # this is the url that you sync static files to
 
