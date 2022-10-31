@@ -121,8 +121,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role="roles/storage.admin"
 # Make the Cloud Storage file upload bucket readable by allUsers - Within Cloud Storage permissions, add a user "allUsers" with the Role Storage Object Viewer and the role Storage Legacy Bucket Reader.
 gsutil iam ch allUsers:objectViewer gs://${PROJECT_ID}_file_uploads
-
-#??TODO: CHECK IF NEEDED?? Make sure the static folder path within the Django config file /site/config/settings.py STATICFILES_DIRS is set to './static'
+gsutil iam ch allUsers:objectViewer gs://${PROJECT_ID}_clv-app-gcp_static
 
 #4. Create a Cloud SQL Instance 
 echo "4/10. Creating Cloud SQL Instance
