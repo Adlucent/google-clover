@@ -21,7 +21,7 @@ django-model-utils
 djangorestframework
 djangorestframework_simplejwt==4.4
 djangorestframework-api-key==2.1
-PyJWT==1.7.1
+pyjwt>=2.4.0
 django-ipware
 django-storages[google]
 django-grappelli
